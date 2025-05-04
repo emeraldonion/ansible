@@ -7,4 +7,4 @@
     - config_knot-resolver
     # - node-exporter
     - config_nginx
-    - verify
+    # - verify
