@@ -8,7 +8,3 @@ all:
       hosts:
         ansible:
           ansible_host: 23.129.64.201
-
-  vars:
-    ansible_user: wgb
-    ansible_become: true
