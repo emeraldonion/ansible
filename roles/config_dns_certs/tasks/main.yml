@@ -2,22 +2,22 @@
   ansible.builtin.file:
     path: /opt/dns
     state: directory
-    owner: root
-    group: root
+    owner: knot-resolver
+    group: knot-resolver
     mode: '0750'
 
 - name: Copy TLS pubkey for dns.disobey.net
   ansible.builtin.copy:
     src: /opt/certs/cert.pem
     dest: /opt/dns/cert.pem
-    owner: root
-    group: root
+    owner: knot-resolver
+    group: knot-resolver
     mode: '0640'
 
 - name: Copy TLS privkey for dns.disobey.net
   ansible.builtin.copy:
     src: /opt/certs/key.pem
     dest: /opt/dns/key.pem
-    owner: root
-    group: root
+    owner: knot-resolver
+    group: knot-resolver
     mode: '0640'
