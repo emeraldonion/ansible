@@ -1,10 +1,10 @@
-- name: Install and configure knot-resolver and nginx for DNS + DoH
+- name: Install and configure knot-resolver for DNS + DoT and nginx for DoH
   become: true
   hosts: dns
   roles:
     - packages_dns
+    - config_dns_certs
     - config_knot-resolver
     # - node-exporter
     - config_nginx
-    - config_dns_certs
     - verify
