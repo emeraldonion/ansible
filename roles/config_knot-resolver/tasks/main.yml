@@ -22,8 +22,8 @@
   ansible.builtin.template:
     src: kresd.conf
     dest: /etc/knot-resolver/kresd.conf
-    owner: root
-    group: root
+    owner: knot-resolver
+    group: knot-resolver
     mode: '0640'
   notify: Restart kresd
 
@@ -33,8 +33,8 @@
 #   ansible.builtin.template:
 #     src: kresd.service
 #     dest: /lib/systemd/system/kresd@.service
-#     owner: root
-#     group: root
+#     owner: knot-resolver
+#     group: knot-resolver
 #     mode: '0640'
 #   notify: Restart kresd
 
