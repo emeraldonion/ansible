@@ -1,3 +1,11 @@
+- name: Create directory to hold DNS certs
+  ansible.builtin.file:
+    path: /opt/dns
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+
 - name: Copy TLS pubkey for dns.disobey.net
   ansible.builtin.copy:
     src: /opt/certs/cert.pem
