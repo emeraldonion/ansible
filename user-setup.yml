@@ -1,0 +1,61 @@
+- name: Generate random password for "{{ user_item.name }}"
+  set_fact:
+    user_password_plaintext: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits') }}"
+
+- name: Create user "{{ user_item.name }}"
+  user:
+    name: "{{ user_item.name }}"
+    state: present
+    shell: /bin/bash
+    create_home: yes
+    password: "{{ user_password_plaintext | password_hash('sha512') }}"
+    groups: sudo
+    append: yes
+
+- name: Check password expiry for "{{ user_item.name }}"
+  command: chage -l {{ user_item.name }}
+  register: chage_info
+  changed_when: false
+  failed_when: false  # Handle cases where user doesn't exist yet
+
+- name: Expire password if not already expired for "{{ user_item.name }}"
+  command: chage -d 0 {{ user_item.name }}
+  when: 
+    - user_item.name in chage_info.stdout
+    - '"Password must be changed" not in chage_info.stdout'
+
+- name: Show credentials for "{{ user_item.name }}"
+  debug:
+    msg:
+      - "Host: {{ inventory_hostname }}"
+      - "IP: {{ ansible_default_ipv4.address }}"
+      - "User: {{ user_item.name }}"
+      - "Password: {{ user_password_plaintext }}"
+
+- name: Save credentials locally for "{{ user_item.name }}"
+  copy:
+    dest: ".secrets/{{ inventory_hostname }}_{{ user_item.name }}_credentials.txt"
+    content: |
+      Host: {{ inventory_hostname }}
+      IP: {{ ansible_default_ipv4.address }}
+      User: {{ user_item.name }}
+      Password: {{ user_password_plaintext }}
+  delegate_to: localhost
+
+- name: Create .ssh directory for "{{ user_item.name }}"
+  file:
+    path: "/home/{{ user_item.name }}/.ssh"
+    state: directory
+    owner: "{{ user_item.name }}"
+    group: "{{ user_item.name }}"
+    mode: '0700'
+
+- name: Download SSH public key for "{{ user_item.name }}"
+  get_url:
+    url: "{{ user_item.ssh_key_url }}"
+    dest: "/home/{{ user_item.name }}/.ssh/authorized_keys"
+    owner: "{{ user_item.name }}"
+    group: "{{ user_item.name }}"
+    mode: '0600'
+    force: yes
+

@@ -1,0 +1,14 @@
+all:
+  children:
+    dns:
+      hosts:
+        eo-dns0:
+          ansible_host: 23.129.64.57
+    management:
+      hosts:
+        ansible:
+          ansible_host: 23.129.64.201
+
+  vars:
+    ansible_user: wgb
+    ansible_become: true
