@@ -1,0 +1,51 @@
+- name: Check service status
+  ansible.builtin.command: systemctl status "{{ item }}"
+  with_items:
+    - kresd@1
+    - nginx
+    - nginx-exporter
+  register: result
+  ignore_errors: true
+  changed_when: false
+
+- name: Check IPv4 NSID query
+  ansible.builtin.shell: dig @{{ wg.ip }} -4 +nsid | grep NSID
+  register: this
+  failed_when: "inventory_hostname not in this.stdout"
+  changed_when: false
+
+- name: Check IPv6 NSID query
+  ansible.builtin.shell: dig @{{ wg.ip }} -6 +nsid | grep NSID
+  register: this
+  failed_when: "inventory_hostname not in this.stdout"
+  changed_when: false
+
+# - name: Check DNSSEC OK query
+#   ansible.builtin.shell: dig @{{ wg.ip }} +short sigok.verteiltesysteme.net
+#   register: this
+#   failed_when: "'.' not in this.stdout"
+#   changed_when: false
+
+# - name: Check DNSSEC FAIL query
+#   ansible.builtin.shell: dig @{{ wg.ip }} +short sigfail.verteiltesysteme.net
+#   register: this
+#   failed_when: this.stdout != ""
+#   changed_when: false
+
+- name: Check QNAME minimization
+  ansible.builtin.command: dig @{{ wg.ip }} +short TXT qnamemintest.internet.nl
+  register: this
+  failed_when: "'QNAME minimisation is enabled' not in this.stdout"
+  changed_when: false
+
+- name: Check DoT NSID query
+  ansible.builtin.shell: kdig +tls +nsid @dns.disobey.net | grep NSID
+  register: this
+  failed_when: "inventory_hostname not in this.stdout"
+  changed_when: false
+
+- name: Check DoH NSID query
+  ansible.builtin.shell: kdig +https +nsid @dns.disobey.net | grep NSID
+  register: this
+  failed_when: "inventory_hostname not in this.stdout"
+  changed_when: false

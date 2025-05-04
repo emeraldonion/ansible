@@ -1,64 +1,14 @@
 
 - name: Update netplan and manage users
   hosts: all
-  become: yes
+  become: true
 
   vars_prompt:
     - name: host_octet
       prompt: "Enter the last octet for the host IP (e.g., 42 for 192.168.1.42)"
-      private: no
+      private: false
 
-  vars:
-    users_to_create:
-      - name: yawnbox
-        ssh_key_url: "https://github.com/yawnbox.keys"
-      - name: alex
-        ssh_key_url: "https://github.com/alexhaydock.keys"
-
-  tasks:
-    - name: Generate netplan config with dynamic IP
-      copy:
-        dest: /etc/netplan/01-static.yaml
-        content: |
-          network:
-            version: 2
-            renderer: networkd
-            ethernets:
-              ens18:
-                dhcp4: no
-                dhcp6: no
-                accept-ra: no
-                addresses:
-                  - 23.129.64.{{ host_octet }}/24
-                  - 2620:18c:0:192::33:{{ host_octet }}/64
-                nameservers:
-                  addresses:
-                    - 1.1.1.1
-                    - 1.0.0.1
-                    - 2606:4700:4700::1111
-                    - 2606:4700:4700::1001
-                  search: []
-
-                routes:
-                  - to: ::/0
-                    via: fe80::4a8f:5aff:fed5:258a
-                    on-link: true
-                    metric: 10
-                    from: 2620:18c:0:192::33:{{ host_octet }}
-                  - to: 0.0.0.0/0
-                    via: 23.129.64.1
-                    on-link: true
-                    metric: 100
-
-      notify: Apply netplan
-
-    - name: Create users with SSH keys
-      include_tasks: user-setup.yml
-      loop: "{{ users_to_create }}"
-      loop_control:
-        loop_var: user_item
-
-  handlers:
-    - name: Apply netplan
-      command: netplan apply
-
+  roles:
+    - config_netplan
+    - create-users
+    - config_openssh-server

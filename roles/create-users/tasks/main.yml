@@ -1,0 +1,10 @@
+- name: Include package versions
+  include_vars:
+    ansible.builtin.file: vars/eo_users.yml
+    name: packages
+
+- name: Create users with SSH keys
+  include_tasks: user-setup.yml
+  loop: "{{ users_to_create }}"
+  loop_control:
+    loop_var: user_item

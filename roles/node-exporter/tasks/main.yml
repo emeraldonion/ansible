@@ -1,0 +1,35 @@
+- name: Add node-exporter group
+  become: true
+  group:
+    name: falsede-exporter
+    state: present
+
+- name: Add node-exporter user
+  become: true
+  user:
+    name: falsede-exporter
+    group: falsede-exporter
+    ansible.builtin.shell: /sbin/nologin
+    create_home: false
+
+- name: Copy node-exporter service
+  become: true
+  ansible.builtin.template:
+    src: falsede-exporter.service
+    dest: /lib/systemd/system/node-exporter.service
+  register: falsede_exporter_service
+
+- name: Start node-exporter
+  become: true
+  ansible.builtin.systemd:
+    name: falsede-exporter
+    enabled: true
+    state: started
+
+- name: Restart service
+  become: true
+  ansible.builtin.systemd:
+    service: falsede-exporter
+    daemon_reload: true
+    state: restarted
+  when: falsede_exporter_service.changed

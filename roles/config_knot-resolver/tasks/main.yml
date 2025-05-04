@@ -1,0 +1,54 @@
+- name: Copy root key
+  become: true
+  ansible.builtin.copy:
+    src: /usr/share/dns/root.key
+    dest: /var/lib/knot-resolver/root.key
+    remote_src: true
+    owner: knot-resolver
+    group: knot-resolver
+    mode: '0640'
+
+- name: Mount tmpfs
+  become: true
+  ansible.posix.mount:
+    name: /var/cache/knot-resolver
+    src: tmpfs
+    fstype: tmpfs
+    opts: "rw,size=1200M,uid=knot-resolver,gid=knot-resolver,nosuid,nodev,noexec,mode=0700"
+    state: present
+
+- name: Copy kresd.conf
+  become: true
+  ansible.builtin.template:
+    src: kresd.conf
+    dest: /etc/knot-resolver/kresd.conf
+    owner: root
+    group: root
+    mode: '0640'
+  register: kresd_config
+
+#  TODO: Replace with hardened systemd service
+# - name: Copy kresd@.service
+#   become: true
+#   ansible.builtin.template:
+#     src: kresd.service
+#     dest: /lib/systemd/system/kresd@.service
+#     owner: root
+#     group: root
+#     mode: '0640'
+#   register: kresd_service
+
+- name: Restart kresd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: kresd@1.service
+    state: restarted
+  when: kresd_config.changed or kresd_service.changed
+
+- name: Enable and start kresd
+  become: true
+  ansible.builtin.systemd:
+    name: kresd@1.service
+    state: started
+    enabled: true

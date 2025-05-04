@@ -6,20 +6,20 @@
   user:
     name: "{{ user_item.name }}"
     state: present
-    shell: /bin/bash
-    create_home: yes
+    ansible.builtin.shell: /bin/bash
+    create_home: true
     password: "{{ user_password_plaintext | password_hash('sha512') }}"
     groups: sudo
-    append: yes
+    append: true
 
 - name: Check password expiry for "{{ user_item.name }}"
-  command: chage -l {{ user_item.name }}
+  ansible.builtin.command: chage -l {{ user_item.name }}
   register: chage_info
   changed_when: false
   failed_when: false  # Handle cases where user doesn't exist yet
 
 - name: Expire password if not already expired for "{{ user_item.name }}"
-  command: chage -d 0 {{ user_item.name }}
+  ansible.builtin.command: chage -d 0 {{ user_item.name }}
   when: 
     - user_item.name in chage_info.stdout
     - '"Password must be changed" not in chage_info.stdout'
@@ -33,7 +33,7 @@
       - "Password: {{ user_password_plaintext }}"
 
 - name: Save credentials locally for "{{ user_item.name }}"
-  copy:
+  ansible.builtin.copy:
     dest: ".secrets/{{ inventory_hostname }}_{{ user_item.name }}_credentials.txt"
     content: |
       Host: {{ inventory_hostname }}
@@ -43,7 +43,7 @@
   delegate_to: localhost
 
 - name: Create .ssh directory for "{{ user_item.name }}"
-  file:
+  ansible.builtin.file:
     path: "/home/{{ user_item.name }}/.ssh"
     state: directory
     owner: "{{ user_item.name }}"
@@ -57,5 +57,4 @@
     owner: "{{ user_item.name }}"
     group: "{{ user_item.name }}"
     mode: '0600'
-    force: yes
-
+    force: true

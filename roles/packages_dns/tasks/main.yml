@@ -1,0 +1,10 @@
+- name: Install packages
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    pkg:
+      - knot-dnsutils  # kdig DNS client
+      - knot-resolver  # knot resolver
+      - nginx
+      - prometheus-nginx-exporter
+      - prometheus-node-exporter

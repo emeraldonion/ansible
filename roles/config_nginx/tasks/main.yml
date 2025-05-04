@@ -1,0 +1,60 @@
+- name: Remove default config
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/nginx/sites-available/default
+    - /etc/nginx/sites-enabled/default
+
+- name: Create web root
+  become: true
+  ansible.builtin.file:
+    path: /var/www/html/dns/
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: '0750'
+
+- name: Copy site index
+  become: true
+  ansible.builtin.template:
+    src: index.html
+    dest: /var/www/html/dns/index.html
+    owner: nginx
+    group: nginx
+    mode: '0640'
+
+- name: Copy server config
+  become: true
+  ansible.builtin.template:
+    src: dns.disobey.net
+    dest: /etc/nginx/sites-available/dns.disobey.net
+    owner: nginx
+    group: nginx
+    mode: '0640'
+  notify: Reload nginx
+
+- name: Copy main server config
+  become: true
+  ansible.builtin.template:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: nginx
+    group: nginx
+    mode: '0640'
+  notify: Reload nginx
+
+- name: Symlink server config
+  become: true
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/dns.disobey.net
+    dest: /etc/nginx/sites-enabled/dns.disobey.net
+    state: link
+
+- name: Start nginx
+  become: true
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: true
