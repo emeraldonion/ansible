@@ -12,8 +12,8 @@
   ansible.builtin.file:
     path: /var/www/html/dns/
     state: directory
-    owner: nginx
-    group: nginx
+    owner: www-data
+    group: www-data
     mode: '0750'
 
 - name: Copy site index
@@ -21,8 +21,8 @@
   ansible.builtin.template:
     src: index.html
     dest: /var/www/html/dns/index.html
-    owner: nginx
-    group: nginx
+    owner: www-data
+    group: www-data
     mode: '0640'
 
 - name: Copy server config
@@ -30,8 +30,8 @@
   ansible.builtin.template:
     src: dns.disobey.net
     dest: /etc/nginx/sites-available/dns.disobey.net
-    owner: nginx
-    group: nginx
+    owner: www-data
+    group: www-data
     mode: '0640'
   notify: Reload nginx
 
@@ -40,8 +40,8 @@
   ansible.builtin.template:
     src: nginx.conf
     dest: /etc/nginx/nginx.conf
-    owner: nginx
-    group: nginx
+    owner: www-data
+    group: www-data
     mode: '0640'
   notify: Reload nginx
 
