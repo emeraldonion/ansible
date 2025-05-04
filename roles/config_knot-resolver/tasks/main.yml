@@ -25,7 +25,7 @@
     owner: root
     group: root
     mode: '0640'
-  register: kresd_config
+  notify: Restart kresd
 
 #  TODO: Replace with hardened systemd service
 # - name: Copy kresd@.service
@@ -36,15 +36,7 @@
 #     owner: root
 #     group: root
 #     mode: '0640'
-#   register: kresd_service
-
-- name: Restart kresd
-  become: true
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: kresd@1.service
-    state: restarted
-  when: kresd_config.changed or kresd_service.changed
+#   notify: Restart kresd
 
 - name: Enable and start kresd
   become: true
