@@ -1,5 +1,5 @@
 - name: Install and configure knot-resolver and nginx for DNS + DoH
-  hosts: dns_servers
+  hosts: dns
   roles:
     - packages_dns
     - config_knot-resolver
